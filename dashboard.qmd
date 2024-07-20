@@ -1,0 +1,32 @@
+---
+title: "a definir"
+format: 
+  dashboard:
+    embed-resources: true
+    nav-buttons: [github]
+    github: https://github.com/jfajonathan/dashboard-quarto
+logo: images/logo.png
+theme: [sandstone, theme/custom.scss]
+fig-width: 10
+fig-asp: 0.3
+params:
+  none: "-"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: load librarys
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(highcharter)
+
+none <- params$none
+
+```
+
+```{r}
+print(none)
+```
