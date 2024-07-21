@@ -1,7 +1,7 @@
 .env
 venv/
 credentials/kaggle.json
-kaggle.json
-data/State_of_data_BR_2023_Kaggle - df_survey_2023.csv
-data/state-of-data-brazil-2023.zip
-data/to_from_columns.csv
+# kaggle.json
+# data/State_of_data_BR_2023_Kaggle - df_survey_2023.csv
+# data/state-of-data-brazil-2023.zip
+# data/to_from_columns.csv

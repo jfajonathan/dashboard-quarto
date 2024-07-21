@@ -1,16 +1,18 @@
 ---
-title: "a definir"
+title: "An Overview of Brazilian Data Professionals"
 format: 
   dashboard:
-    embed-resources: true
+    embed-resources: false
     nav-buttons: [github]
     github: https://github.com/jfajonathan/dashboard-quarto
 logo: images/logo.png
-theme: [sandstone, theme/custom.scss]
+theme:
+  - cosmo
+  - custom.scss
 fig-width: 10
 fig-asp: 0.3
 params:
-  none: "-"
+  year: "2023"
 editor_options: 
   chunk_output_type: console
 ---
@@ -22,11 +24,145 @@ editor_options:
 
 library(tidyverse)
 library(highcharter)
-
+library(bslib)
+library(bsicons)
+library(shiny)
+# source("./functions/functions.r")
 none <- params$none
 
+theme_set(theme_minimal(base_size = 24, base_family = "Atkinson Hyperlegible"))
 ```
 
 ```{r}
-print(none)
+#| label: data
+#| warning: false
+#| message: false
+
+data <- readr::read_csv("data/final_data.csv")
+
+```
+
+#  {.sidebar}
+
+This dashboard displays statistics for:
+
+|              |                     |
+|--------------|---------------------|
+| **DATA HACKERS** | State of Data Brazil |
+| **YEAR**    | `{r} params$year`   |
+
+------------------------------------------------------------------------
+
+Between November and December 2023, more than 5,200 professionals participated in the State of Data Brazil survey - the largest annual study on the data job market in Brazil. This research is carried out by the Data Hackers community in collaboration with Bain & Company, and this is the 4th edition of the study, which began in 2019.
+
+------------------------------------------------------------------------
+::: {.callout-note collapse="true"}
+## License
+The data contained in this dashboard has been extracted and displayed solely for academic and non-commercial purposes under the Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license. All credits related to the dataset are reserved for <a> https://www.datahackers.com.br/. </a>
+:::
+
+# Localization {.tabset .tabset-fade}
+
+## Row {height="20%"}
+```{r}
+#| border-radius: 10px;
+bslib::value_box(
+  max_height = "150px",
+  style = "border-radius: 10px;",
+  width = "50%",
+  title = "Total Answers",
+  theme = "blue",
+  value = nrow(data),
+  showcase = bsicons::bs_icon("people")
+)
+``` 
+
+```{r}
+#| border-radius: 10px;
+
+not_in_brasil <- data %>% 
+  select(P1_G) %>%
+  summarise(
+    not_in_brasil = nrow(data) - sum(P1_G)
+  ) %>% 
+  pull(not_in_brasil)
+
+bslib::value_box(
+  max_height = "150px",
+  style = "border-radius: 10px;",
+  width = "50%",
+  title = "Not living in Brazil",
+  theme = "blue",
+  value = not_in_brasil,
+  showcase = bsicons::bs_icon("globe-central-south-asia")
+)
+``` 
+
+## Row {height="40%"}
+```{r}
+#| label: Answered by State
+#| warning: false
+#| message: false
+#| height: 500
+#| width: 100%
+
+dados_estados <- data %>%
+    select("Estado" = P1_I) %>%
+    mutate(P1_I = str_replace(Estado, ".*\\(([^)]+)\\)$", "\\1")) %>%
+    group_by(Estado) %>%
+    summarise(
+        n = n()
+    )
+
+dados_genero <- data %>% select(P1_I,P1_B) %>%
+    mutate(
+        P1_B = case_when(
+            P1_B %in% c("Outro","Prefiro não informar") ~ "Outro/Não informado",
+            TRUE ~ P1_B
+        )
+    ) %>%
+    rename(Estado = P1_I) %>%
+    table() %>%
+    as.data.frame() %>%
+    pivot_wider(names_from = P1_B,values_from = Freq)
+
+dados_etnia <- data %>% select(P1_I,P1_C) %>%
+    rename(Estado = P1_I) %>%
+    mutate(P1_C = case_when(
+        P1_C %in% c("Outra","Prefiro não informar") ~ "Outra/Não informada",
+        TRUE ~ P1_C
+    )) %>%
+    table() %>%
+    as.data.frame() %>%
+    pivot_wider(names_from = P1_C,values_from = Freq)
+
+dados_mapa <- dados_estados %>%
+    left_join(dados_genero,by = "Estado") %>%
+    left_join(dados_etnia,by = "Estado") 
+
+
+hcmap("countries/br/br-all", data = dados_mapa, value = "n",
+      joinBy = c("hc-a2", "Estado"), name= "<b>State Of Data - Brasil 2023 </b>",
+      dataLabels = list(enabled = TRUE),
+      tooltip = list(pointFormat = paste0(
+          "<style='display: block; font-size: 11px;'> <br> 
+          <b>Genero</b> <br> 
+           - Masculino: {point.Masculino} <br>
+           - Feminino: {point.Feminino} <br> 
+           - Outro/Não informado: {point.Outro/Não informado} <br> 
+           <b> Etnia</b> <br>
+            - Branca: {point.Branca} <br> 
+            - Preta: {point.Preta} <br> 
+            - Parda: {point.Parda} <br> 
+            - Amarela: {point.Amarela} <br> 
+            - Indígena: {point.Indígena} <br> 
+            - Outro/Não informado: {point.Outra/Não informada} <br> <br>
+           <b>Total de Respostas</b> <br>
+           {point.value} <br> 
+           </style>"))
+      ) %>%
+  hc_title(text = "Brasil") %>%
+  hc_colorAxis(min = 0, max = max(dados_mapa$n)) %>% 
+  hc_legend(layout = "vertical", align = "right", valueDecimals = 2)
+
 ```
