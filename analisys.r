@@ -63,3 +63,105 @@ hcmap("countries/br/br-all", data = dados_mapa, value = "n",
   hc_title(text = "Brasil") %>%
   hc_colorAxis(min = 0, max = max(dados_mapa$n)) %>% 
   hc_legend(layout = "vertical", align = "right", valueDecimals = 2)
+
+# programing languages ---------------------------------------------------------------------
+
+data %>%
+    select("Programing Language" = P4_F) %>% 
+    mutate("Programing Language" = case_when(
+        is.na(`Programing Language`)  ~ "No Answer",
+        TRUE ~ `Programing Language`
+    )) %>%
+    group_by(`Programing Language`) %>%
+    summarise(
+        n = n()
+    ) %>%
+    mutate(
+        `Programing Language` =  factor(
+            `Programing Language`,
+            levels = c(
+                "Python",
+                "R",
+                "SQL", 
+                "Scala",
+                "Rust",
+                "Julia",
+                "C/C++/C#",
+                "DAX/M",
+                "Java",
+                "Go",
+                "Spark",
+                "SAS",
+                "Clojure",
+                "Elixir",
+                "Javascript",
+                "Kotlin",
+                "No Answer"),
+            ordered = TRUE
+        )
+    ) %>%
+    arrange(`Programing Language`) %>%
+    hchart(
+    "bar",
+    hcaes(x = `Programing Language`,y = n),
+    dataLabels = list(enabled = TRUE)
+    ) %>%
+    hc_title(text = "Programing Languages") %>%
+    hc_subtitle(text = "Most Preferred Programming Languages") %>%
+    hc_xAxis(title = list(text = "Programing Language")) %>%
+    hc_yAxis(title = list(text = "Number of responses")) %>%
+    hc_tooltip(pointFormat = "{point.y} responses") %>%
+    hc_plotOptions(column = list(
+      dataLabels = list(enabled = TRUE)
+      )
+    )
+# programing languages in work ---------------------------------------------------------------
+
+data %>%
+    select("Programing Language" = P4_E) %>% 
+    mutate("Programing Language" = case_when(
+        is.na(`Programing Language`)  ~ "No Answer",
+        TRUE ~ `Programing Language`
+    )) %>%
+    group_by(`Programing Language`) %>%
+    summarise(
+        n = n()
+    ) %>% arrange( desc(n)) %>% 
+    mutate(
+        `Programing Language` =  factor(
+            `Programing Language`,
+            levels = c(
+                "SQL",
+                "Python",
+                "R",
+                "Visual Basic/VBA",
+                "SAS/Stata",
+                "Scala",
+                "JavaScript",
+                "Java",
+                "PHP",
+                "C/C++/C#",
+                ".NET",
+                "Julia",
+                "Matlab",
+                "No Answer",
+                "Não utilizo nenhuma das linguagens listadas"
+                ),
+            ordered = TRUE
+        )
+    ) %>%
+    arrange(`Programing Language`) %>%
+    hchart(
+    "bar",
+    hcaes(x = `Programing Language`,y = n),
+    dataLabels = list(enabled = TRUE)
+    ) %>%
+    hc_title(text = "Programing Languages") %>%
+    hc_subtitle(text = "Most Used in Work Programming Languages") %>%
+    hc_xAxis(title = list(text = "Programing Language")) %>%
+    hc_yAxis(title = list(text = "Number of responses")) %>%
+    hc_tooltip(pointFormat = "{point.y} responses") %>%
+    hc_plotOptions(column = list(
+      dataLabels = list(enabled = TRUE)
+      )
+    )
